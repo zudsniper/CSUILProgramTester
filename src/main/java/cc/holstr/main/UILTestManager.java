@@ -203,10 +203,12 @@ public class UILTestManager {
 			try {
 				//get classFile, move it to the appropriate directory, create classLoader there for execution of class later
 				File classLoaderDir = Paths.get(path).toFile();
-				File classFile = Arrays.stream(Paths.get(System.getProperty("user.dir")).toFile().listFiles()).filter(f -> f.getName().equals(test.getClassName()+".class")).findFirst().get();
-				File classFileDest = Paths.get(path,test.getClassName()+".class").toFile();
-				classFileDest.delete();
-				FileUtils.moveFile(classFile, classFileDest);
+				if(Runner.DEBUG == true) {
+					File classFile = Arrays.stream(Paths.get(System.getProperty("user.dir")).toFile().listFiles()).filter(f -> f.getName().equals(test.getClassName() + ".class")).findFirst().get();
+					File classFileDest = Paths.get(path, test.getClassName() + ".class").toFile();
+					classFileDest.delete();
+					FileUtils.moveFile(classFile, classFileDest);
+				}
 				URLClassLoader ucl = URLClassLoader.newInstance(new URL[] {classLoaderDir.toURI().toURL()});
 
 				//capture system.out for comparison to expected output

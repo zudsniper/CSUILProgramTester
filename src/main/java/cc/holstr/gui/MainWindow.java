@@ -201,7 +201,12 @@ public class MainWindow extends JFrame {
 		//class viewer
 		classViewer = new JTextArea();
 		JScrollPane classViewerScroll = new JScrollPane(classViewer);
+		TextLineNumber classViewerTLN = new TextLineNumber(classViewer);
 		JPanel classViewerPanel = new JPanel(new BorderLayout());
+
+		classViewerTLN.setFont(textFont);
+		classViewerTLN.setUpdateFont(true);
+		classViewerScroll.setRowHeaderView(classViewerTLN);
 
 		classViewer.setEditable(false);
 		classViewer.setColumns(10);
@@ -271,12 +276,20 @@ public class MainWindow extends JFrame {
 
 		//list element coloring cellrenderer
 		classesList.setCellRenderer(new DefaultListCellRenderer() {
+
+			private boolean testExecuted = false;
+
 			@Override
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				String testName = (String) value;
 				//coloring logic
 				UILTestResult.Outcome outcome = testOutcomeDisplayMap.get(testName);
+
+				if(isSelected && testExecuted) {
+					setForeground(Color.BLACK);
+
+				}
 
 				if(outcome != null) {
 					switch(outcome) {
@@ -290,10 +303,11 @@ public class MainWindow extends JFrame {
 							setBackground(Color.WHITE);
 							break;
 					}
+				} else {
+					testExecuted = true;
 				}
 				return c;
 			}
-
 		});
 
 		populateList(false);
@@ -354,9 +368,12 @@ public class MainWindow extends JFrame {
 			}
 		};
 
+		classViewer.addKeyListener(shortcutKeyAdapter);
 		classesList.addKeyListener(shortcutKeyAdapter);
 		classViewPanel.addKeyListener(shortcutKeyAdapter);
 		classInputViewer.addKeyListener(shortcutKeyAdapter);
+		actualOutputViewer.addKeyListener(shortcutKeyAdapter);
+		expectedOutputViewer.addKeyListener(shortcutKeyAdapter);
 	}
 
 	public void populateList(boolean override) {

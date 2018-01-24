@@ -14,9 +14,11 @@ import java.io.IOException;
  */
 public class Runner {
 
+	public static final boolean DEBUG = true;
+
 	private static final Logger log = LoggerFactory.getLogger(Runner.class);
 
-	public static String path;
+	private static String path;
 
 	public static void main(String[] args) throws IOException {
 
