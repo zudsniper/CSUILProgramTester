@@ -2,6 +2,7 @@ package cc.holstr.main;
 
 import cc.holstr.main.model.UILTest;
 import cc.holstr.main.model.UILTestResult;
+import com.sun.xml.internal.ws.util.StringUtils;
 import name.fraser.neil.plaintext.diff_match_patch;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,10 @@ public class UILTestManager {
 		tests = new ArrayList<>();
 	}
 
+	/**
+	 * search for tests in path directory, and add them to list tests
+	 * @throws IOException
+	 */
 	public void populateTests() throws IOException {
 		tests.clear();
 		File dir = new File(path);
@@ -51,7 +56,6 @@ public class UILTestManager {
 				if(ext.equals("java")) {
 					String fileText = FileUtils.readFileToString(file);
 					test = new UILTest(fileText);
-					log.debug("fileText: \n" + fileText);
 					test.setClassFile(file);
 					test.setClassName(findInString("class ([\\w\\d]+)?", fileText,1));
 					log.debug("ClassName: " + test.getClassName());
@@ -162,7 +166,7 @@ public class UILTestManager {
 	 * @throws IOException
 	 */
 	public UILTestResult test(String testClassName) throws IOException {
-		UILTest test = tests.stream().filter(t -> testClassName.equals(t.getClassName())).findFirst().get();
+		UILTest test = tests.stream().filter(t -> StringUtils.capitalize(testClassName).equals(t.getClassName())).findFirst().get();
 		return test(test);
 	}
 
@@ -270,7 +274,7 @@ public class UILTestManager {
 
 	/**
 	 * Changes relative path references to absolute
-	 * functions for File constructor
+	 * functions for File constructor and thats all for now
 	 * @param fileText
 	 * @return
 	 */
@@ -279,10 +283,25 @@ public class UILTestManager {
 		return fileText.replaceAll("(new File)\\(\"([\\w\\d\\.\\\\]+)\"\\)","new File(\"" + path + System.getProperty("file.separator") + "$2\")");
 	}
 
+	/**
+	 * Convenience method for findInString(exp,str,groupPosition)
+	 * @param exp regular expression
+	 * @param str string to search
+	 * @return found string portion
+	 * @throws IOException
+	 */
 	private String findInString(String exp, String str) throws IOException {
 		return findInString(exp, str, 0);
 	}
 
+	/**
+	 * matches first string portion using a regular expression, and returns it.
+	 * @param exp regular expression
+	 * @param str string to search
+	 * @param groupPosition position on the regex group to return.
+	 * @return found string portion
+	 * @throws IOException
+	 */
 	private String findInString(String exp, String str,int groupPosition) throws IOException {
 		Pattern pattern = Pattern.compile(exp);
 		Matcher m = pattern.matcher(str);
@@ -295,7 +314,12 @@ public class UILTestManager {
 		return null;
 	}
 
-	//doesn't include the dot
+	/**
+	 * Return the extension of a File object
+	 * Doesn't include the dot
+	 * @param f file
+	 * @return file extension
+	 */
 	private String getExt(File f) {
 		String name = f.getName();
 		return name.substring(name.indexOf(".")+1);

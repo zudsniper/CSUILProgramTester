@@ -1,5 +1,6 @@
 package cc.holstr.gui;
 
+import cc.holstr.gui.model.TextLineNumber;
 import cc.holstr.main.UILTestManager;
 import cc.holstr.main.model.UILTest;
 import cc.holstr.main.model.UILTestResult;
@@ -11,10 +12,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -72,7 +70,9 @@ public class MainWindow extends JFrame {
 	private Color actualBorder;
 	private Color buttonText;
 
-	private KeyAdapter shortcutKeyAdapter;
+	private Action reloadAction;
+	private Action runAction;
+	private Action runAllAction;
 
 	public MainWindow(UILTestManager mgr) {
 		super("UIL Program Tester");
@@ -84,6 +84,9 @@ public class MainWindow extends JFrame {
 		setVisible(true);
 	}
 
+	/**
+	 * Initialise all GUI components and assemble GUI.
+	 */
 	private void buildGUIComponents() {
 		main = new JSplitPane();
 		main.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
@@ -270,8 +273,13 @@ public class MainWindow extends JFrame {
 		});*/
 	}
 
+	/**
+	 * add functionality to GUI
+	 * adds customCellRenderer for test status colours
+	 * adds all keyListeners & MouseListener
+	 * adds button functionality
+	 */
 	private void populateGUI() {
-
 		testOutcomeDisplayMap = new TreeMap<>();
 
 		//list element coloring cellrenderer
@@ -328,24 +336,15 @@ public class MainWindow extends JFrame {
 			}
 		});
 
+
+		createActions();
 		//BUTTON FUNC
 
 		//reload
-		reloadButton.addActionListener(event -> {
-			populateList(true);
-			classesList.grabFocus();
-		});
+		reloadButton.addActionListener(reloadAction);
 
 		//testAll
-		testAllButton.addActionListener(event -> {
-			try {
-				List<UILTestResult> results = mgr.testAll();
-				results.forEach(this::testExecuted);
-				classesList.grabFocus();
-			} catch(IOException e) {
-				error(e);
-			}
-		});
+		testAllButton.addActionListener(runAllAction);
 		//openWorkingDir
 		openWorkingDirButton.addActionListener(event -> {
 			try {
@@ -354,8 +353,21 @@ public class MainWindow extends JFrame {
 				error(e);
 			}
 		});
-		//SHORTCUT ADAPTER
-		shortcutKeyAdapter = new KeyAdapter() {
+
+		//REAL SHORTCUTS
+		main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_R,InputEvent.CTRL_DOWN_MASK),
+				"run");
+		main.getActionMap().put("run",runAction);
+		main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.SHIFT_DOWN_MASK),
+				"reload");
+		main.getActionMap().put("reload",reloadAction);
+		main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK),
+				"runAll");
+		main.getActionMap().put("runAll",runAllAction);
+
+
+		//OLD SHORTCUT ADAPTER
+		/*shortcutKeyAdapter = new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				super.keyPressed(e);
@@ -373,9 +385,49 @@ public class MainWindow extends JFrame {
 		classViewPanel.addKeyListener(shortcutKeyAdapter);
 		classInputViewer.addKeyListener(shortcutKeyAdapter);
 		actualOutputViewer.addKeyListener(shortcutKeyAdapter);
-		expectedOutputViewer.addKeyListener(shortcutKeyAdapter);
+		expectedOutputViewer.addKeyListener(shortcutKeyAdapter);*/
 	}
 
+	/**
+	 * creates AbstractActions for all button/shortcut functionality
+	 */
+	public void createActions() {
+		reloadAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				populateList(true);
+				classesList.grabFocus();
+			}
+		};
+
+		runAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(activeClassName != null && !"".equals(activeClassName)) {
+					log.info("reloading class " + activeClassName);
+					testSelected(activeClassName);
+				}
+			}
+		};
+
+		runAllAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					main.grabFocus();
+					List<UILTestResult> results = mgr.testAll();
+					results.forEach(s -> testExecuted(s));
+					classesList.grabFocus();
+				} catch(IOException ex) {
+					error(ex);
+				}
+			}
+		};
+	}
+	/**
+	 * Fill lists with tests generated from manager
+	 * @param override whether or not to override and reload tests
+	 */
 	public void populateList(boolean override) {
 		if(mgr.getTestsList().size() < 1 || override) {
 			testOutcomeDisplayMap.clear();
@@ -389,6 +441,10 @@ public class MainWindow extends JFrame {
 		classesList.setListData(classNames);
 	}
 
+	/**
+	 * Run test and populate elements for the classViewer panel.
+	 * @param testName name of the test to run
+	 */
 	private void testSelected(String testName) {
 		activeClassName = testName;
 		classViewerStatus.setText("Loading...");
@@ -431,6 +487,10 @@ public class MainWindow extends JFrame {
 		swingWorker.execute();
 	}
 
+	/**
+	 * clean up and change labels after a test is executed.
+	 * @param result the UILTestResult object to use for population
+	 */
 	private void testExecuted(UILTestResult result) {
 		testOutcomeDisplayMap.put(result.getClassName(),result.getOutcome());
 		actualOutputViewer.setText(result.getActualOutput());
@@ -438,6 +498,10 @@ public class MainWindow extends JFrame {
 		classViewerStatus.setText(result.getClassName());
 	}
 
+	/**
+	 * perform comparison highlighting using Google diff_match_patch for the actual and expected output JTextAreas
+	 * @param result the UILTestResult object to use for comparison
+	 */
 	private void highlightByDiffs(UILTestResult result) {
 		Highlighter.HighlightPainter deletionPainter = new DefaultHighlighter.DefaultHighlightPainter(highlightRed);
 		Highlighter.HighlightPainter insertionPainter = new DefaultHighlighter.DefaultHighlightPainter(highlightGreen);
@@ -481,6 +545,10 @@ public class MainWindow extends JFrame {
 		}
 	}
 
+	/**
+	 * log error and show user-friendly error message
+	 * @param e
+	 */
 	private void error(Exception e) {
 		JOptionPane.showMessageDialog(this,e.getMessage(),e.getClass().getName(),JOptionPane.ERROR_MESSAGE);
 		log.error(e.getMessage());

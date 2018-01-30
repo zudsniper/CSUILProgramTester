@@ -15,6 +15,12 @@ public class UILTestResult {
 	private LinkedList<diff_match_patch.Diff> differences;
 	private Outcome outcome;
 
+	public UILTestResult(UILTest test, String actualOutput, Outcome outcome) {
+		this.test = test;
+		this.actualOutput = actualOutput;
+		this.outcome = outcome;
+	}
+
 	public UILTestResult(UILTest test, String actualOutput, LinkedList<diff_match_patch.Diff> differences, Outcome outcome) {
 		this.test = test;
 		this.actualOutput = actualOutput;

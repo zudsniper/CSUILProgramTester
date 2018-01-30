@@ -1,4 +1,4 @@
-package cc.holstr.gui;
+package cc.holstr.gui.model;
 
 import java.awt.*;
 import java.awt.event.*;
