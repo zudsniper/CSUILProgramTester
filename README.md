@@ -5,10 +5,10 @@ two letters flipped. With this fact in mind, I built this small application for 
 
 ## Downloads
 To begin, downloads are below: 
-  - [mac](https://github.com/zudsniper/CSUILProgramTester/tree/mac1.2.1)
-  - [mac (bundled JRE)](https://github.com/zudsniper/CSUILProgramTester/tree/mac1.2.1b)
-  - [windows](https://github.com/zudsniper/CSUILProgramTester/tree/win1.2.1)
-  - [jar](https://github.com/zudsniper/CSUILProgramTester/tree/jar1.2.1)
+  - [mac](https://github.com/zudsniper/CSUILProgramTester/releases/tag/mac1.2.1)
+  - [mac (bundled JRE)](https://github.com/zudsniper/CSUILProgramTester/releases/tag/mac1.2.1b)
+  - [windows](https://github.com/zudsniper/CSUILProgramTester/releases/tag/win1.2.1)
+  - [jar](https://github.com/zudsniper/CSUILProgramTester/releases/tag/jar1.2.1)
   
 _if you're having trouble with the mac or windows download, the .jar is platform independent, so long as java is installed._
 
