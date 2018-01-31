@@ -6,7 +6,7 @@
 
     <groupId>cc.holstr</groupId>
     <artifactId>CUPT</artifactId>
-    <version>PRERELEASE-1.2.0</version>
+    <version>RELEASE-1.2.1</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
