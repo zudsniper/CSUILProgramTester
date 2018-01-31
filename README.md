@@ -5,8 +5,8 @@ two letters flipped. With this fact in mind, I built this small application for 
 
 ## Downloads
 To begin, downloads are below: 
-  - [mac](https://github.com/zudsniper/CSUILProgramTester/releases/tag/mac1.2.1)
-  - [mac (bundled JRE)](https://github.com/zudsniper/CSUILProgramTester/releases/tag/mac1.2.1b)
+  - ~~[mac](https://github.com/zudsniper/CSUILProgramTester/releases/tag/mac1.2.1)~~ (likely broken, use jar)
+  - ~~[mac (bundled JRE)](https://github.com/zudsniper/CSUILProgramTester/releases/tag/mac1.2.1b)~~ (likely broken, use jar)
   - [windows](https://github.com/zudsniper/CSUILProgramTester/releases/tag/win1.2.1)
   - [jar](https://github.com/zudsniper/CSUILProgramTester/releases/tag/jar1.2.1)
   
