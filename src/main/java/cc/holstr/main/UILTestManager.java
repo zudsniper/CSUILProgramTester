@@ -1,10 +1,11 @@
 package cc.holstr.main;
 
+import cc.holstr.exception.ClassCompilationException;
 import cc.holstr.main.model.UILTest;
 import cc.holstr.main.model.UILTestResult;
-import com.sun.xml.internal.ws.util.StringUtils;
 import name.fraser.neil.plaintext.diff_match_patch;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,7 +152,7 @@ public class UILTestManager {
 	 * Convenience method for test(UILTest), runs all tests within tests ArrayList
 	 * @return List of UILTestResults for all tests run
 	 */
-	public List<UILTestResult> testAll() throws IOException{
+	public List<UILTestResult> testAll() throws ClassCompilationException{
 		List<UILTestResult> results = new ArrayList<>();
 		for(UILTest test : tests) {
 			results.add(test(test));
@@ -165,7 +166,7 @@ public class UILTestManager {
 	 * @return The UILTestResult with populated differences
 	 * @throws IOException
 	 */
-	public UILTestResult test(String testClassName) throws IOException {
+	public UILTestResult test(String testClassName) throws ClassCompilationException {
 		UILTest test = tests.stream().filter(t -> StringUtils.capitalize(testClassName).equals(t.getClassName())).findFirst().get();
 		return test(test);
 	}
@@ -176,7 +177,7 @@ public class UILTestManager {
 	 * @return The UILTestResult with populated differences
 	 * @throws IOException
 	 */
-	public UILTestResult test(UILTest test) throws IOException {
+	public UILTestResult test(UILTest test) throws ClassCompilationException {
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
@@ -201,6 +202,9 @@ public class UILTestManager {
 			System.out.println(diagnostic.getEndPosition());
 			System.out.println(diagnostic.getSource());
 			System.out.println(diagnostic.getMessage(null));
+		}
+		if(diagnostics.getDiagnostics().size()>0) {
+			throw new ClassCompilationException(diagnostics.getDiagnostics());
 		}
 
 		if (success) {
@@ -278,9 +282,21 @@ public class UILTestManager {
 	 * @param fileText
 	 * @return
 	 */
-	private String absolutify(String fileText) {
-		//assumes reference doesn't begin with dir separator
-		return fileText.replaceAll("(new File)\\(\"([\\w\\d\\.\\\\]+)\"\\)","new File(\"" + path + System.getProperty("file.separator") + "$2\")");
+	public String absolutify(String fileText) {
+		String fs = System.getProperty("file.separator");
+		String absPath;
+		if(System.getProperty("os.name").toLowerCase().contains("win")) {
+			//i hate windows
+			log.debug("WINDOWS");
+			absPath = Paths.get(path).toFile().getAbsolutePath() + "\\";
+			absPath = absPath.replaceAll("\\\\",fs + fs + fs + fs);
+		} else {
+			absPath = Paths.get(path).toFile().getAbsolutePath() + fs;
+		}
+		log.debug(Matcher.quoteReplacement(absPath));
+		String str =  fileText.replaceAll("(new File)\\(\"([\\w\\d\\.\\\\/]+)\"\\)","new File(\"" + Matcher.quoteReplacement(absPath) + "$2\")");
+		log.debug("\nabsolutified: \n" + str);
+		return str;
 	}
 
 	/**

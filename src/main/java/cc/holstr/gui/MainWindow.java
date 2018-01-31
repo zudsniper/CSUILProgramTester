@@ -1,21 +1,24 @@
 package cc.holstr.gui;
 
+import cc.holstr.exception.ClassCompilationException;
 import cc.holstr.gui.model.TextLineNumber;
+import cc.holstr.main.Runner;
 import cc.holstr.main.UILTestManager;
 import cc.holstr.main.model.UILTest;
 import cc.holstr.main.model.UILTestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import static name.fraser.neil.plaintext.diff_match_patch.Diff;
@@ -153,7 +156,7 @@ public class MainWindow extends JFrame {
 		JPanel titlesPanel = new JPanel(new GridLayout(2,1));
 		JLabel title = new JLabel("CS UIL Program Tester", SwingConstants.CENTER);
 		title.setFont(titleFont);
-		JLabel subtitle = new JLabel("v1.0 by zudsniper", SwingConstants.CENTER);
+		JLabel subtitle = new JLabel(Runner.version + " by zudsniper", SwingConstants.CENTER);
 		subtitle.setFont(subtitleFont);
 
 		titlesPanel.add(title);
@@ -248,6 +251,10 @@ public class MainWindow extends JFrame {
 		setMinimumSize(new Dimension(614,170));
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setSize(800,600);
+		ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("icon_512x512.png")));
+		setIconImage(imageIcon.getImage());
+
+
 
 		/*addComponentListener(new ComponentListener() {
 			@Override
@@ -418,8 +425,8 @@ public class MainWindow extends JFrame {
 					List<UILTestResult> results = mgr.testAll();
 					results.forEach(s -> testExecuted(s));
 					classesList.grabFocus();
-				} catch(IOException ex) {
-					error(ex);
+				} catch (ClassCompilationException cce) {
+					error(cce);
 				}
 			}
 		};
@@ -470,12 +477,17 @@ public class MainWindow extends JFrame {
 
 			@Override
 			protected UILTestResult doInBackground() throws Exception {
-				UILTest test = mgr.getTest(testName);
-				classInputViewer.setText(test.getInput());
-				expectedOutputViewer.setText(test.getOutput());
-				classViewer.setText(test.getRawClassCode());
-				result =  mgr.test(test);
-				return result;
+				try {
+					UILTest test = mgr.getTest(testName);
+					classInputViewer.setText(test.getInput());
+					expectedOutputViewer.setText(test.getOutput());
+					classViewer.setText(test.getRawClassCode());
+					result = mgr.test(test);
+					return result;
+				} catch(ClassCompilationException cce) {
+					error(cce);
+				}
+				return null;
 			}
 
 			@Override
@@ -550,7 +562,7 @@ public class MainWindow extends JFrame {
 	 * @param e
 	 */
 	private void error(Exception e) {
-		JOptionPane.showMessageDialog(this,e.getMessage(),e.getClass().getName(),JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this,e.getMessage(),e.getClass().getSimpleName(),JOptionPane.ERROR_MESSAGE);
 		log.error(e.getMessage());
 		e.printStackTrace();
 	}

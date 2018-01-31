@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
@@ -160,4 +161,11 @@ public class UILTestManagerTest {
 
 	}
 
+    @Test
+    public void absolutify() {
+	    UILTestManager mgr = new UILTestManager("test");
+	    String relative = "new File(\"file.dat\");";
+	    assertEquals("new File(\"" + Paths.get(mgr.getPath()).toFile().getAbsolutePath() + System.getProperty("file.separator") + "file.dat\");", mgr.absolutify(relative));
+
+    }
 }

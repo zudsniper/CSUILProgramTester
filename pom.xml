@@ -6,7 +6,7 @@
 
     <groupId>cc.holstr</groupId>
     <artifactId>CUPT</artifactId>
-    <version>PRERELEASE-1.1.2</version>
+    <version>PRERELEASE-1.2.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -40,9 +40,30 @@
             <artifactId>commons-io</artifactId>
             <version>2.0.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-lang/commons-lang -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
     </dependencies>
-
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/version.txt</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/version.txt</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -117,10 +138,10 @@
                             <classPath>
                                 <mainClass>cc.holstr.main.Runner</mainClass>
                             </classPath>
-                            <icon>icons/icon_512x512.ico</icon>
+                            <icon>src/main/resources/icon_512x512.ico</icon>
                             <jre>
-                                <minVersion>1.5.0</minVersion>
-                                <maxVersion>1.6.0</maxVersion>
+                                <minVersion>1.7.0</minVersion>
+                                <maxVersion>1.8.0</maxVersion>
                                 <initialHeapSize>512</initialHeapSize>
                                 <maxHeapSize>1024</maxHeapSize>
                             </jre>
