@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/UILProgramTester.iml" filepath="$PROJECT_DIR$/UILProgramTester.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CSUILProgramTester.iml" filepath="$PROJECT_DIR$/CSUILProgramTester.iml" />
     </modules>
   </component>
 </project>

@@ -5,12 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cc.holstr</groupId>
-    <artifactId>UILProgramTester</artifactId>
-    <version>1.1.1</version>
+    <artifactId>CUPT</artifactId>
+    <version>PRERELEASE-1.1.2</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <jre-folder>/Library/Java/JavaCompilationVersions/jre1.8.0_161.jre</jre-folder>
     </properties>
 
     <dependencies>
@@ -108,7 +109,7 @@
                         </goals>
                         <configuration>
                             <headerType>gui</headerType>
-                            <outfile>target/UILProgramTester.exe</outfile>
+                            <outfile>target/CUPT.exe</outfile>
                             <jar>target/${project.artifactId}-${project.version}.jar</jar>
                             <!-- if <dontWrapJar>true</dontWrapJar> change to this conf <jar>${project.artifactId}-${project.version}.jar</jar> -->
                             <dontWrapJar>false</dontWrapJar>
@@ -116,7 +117,7 @@
                             <classPath>
                                 <mainClass>cc.holstr.main.Runner</mainClass>
                             </classPath>
-                            <icon>upt_icon_512.ico</icon>
+                            <icon>icons/icon_512x512.ico</icon>
                             <jre>
                                 <minVersion>1.5.0</minVersion>
                                 <maxVersion>1.6.0</maxVersion>
@@ -127,15 +128,34 @@
                                 <fileVersion>1.0.0.0</fileVersion>
                                 <txtFileVersion>1.0.0.0</txtFileVersion>
                                 <fileDescription>des</fileDescription>
-                                <copyright>Copyright (c) 2014 </copyright>
+                                <copyright>Copyright (c) 2018 </copyright>
                                 <companyName>comp</companyName>
                                 <productVersion>3.0.0.0</productVersion>
                                 <txtProductVersion>${project.version}</txtProductVersion>
-                                <productName>Project</productName>
-                                <internalName>Project</internalName>
-                                <originalFilename>Project.exe</originalFilename>
+                                <productName>CSUILProgramTester</productName>
+                                <internalName>CUPT</internalName>
+                                <originalFilename>CUPT.exe</originalFilename>
                             </versionInfo>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>sh.tak.appbundler</groupId>
+                <artifactId>appbundle-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <mainClass>cc.holstr.main.Runner</mainClass>
+                    <iconFile>cupt.icns</iconFile>
+                    <jrePath>${jre-folder}</jrePath>
+                    <generateDiskImageFile>true</generateDiskImageFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
