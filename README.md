@@ -1,4 +1,4 @@
-# CSUILProgramTester (CUPT)
+# CSUILProgramTester (CUPT) ![logo](https://i.imgur.com/Fu6ZqWk.png)
 While at my first CS UIL contest, my group and I failed to correctly implement what we thought to be the most simple of the 12 
 assigned problems. After spending valuable time diagnosing the problem, we realised that, in fact, one of the print statements had
 two letters flipped. With this fact in mind, I built this small application for testing suites of UIL problems. 
