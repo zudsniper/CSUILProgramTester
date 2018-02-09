@@ -6,7 +6,7 @@
 
     <groupId>cc.holstr</groupId>
     <artifactId>CUPT</artifactId>
-    <version>RELEASE-1.2.1</version>
+    <version>1.2.3</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -140,8 +140,8 @@
                             </classPath>
                             <icon>src/main/resources/icon_512x512.ico</icon>
                             <jre>
-                                <minVersion>1.7.0</minVersion>
-                                <maxVersion>1.8.0</maxVersion>
+                                <minVersion>1.8.0</minVersion>
+                                <maxVersion>1.9.0</maxVersion>
                                 <initialHeapSize>512</initialHeapSize>
                                 <maxHeapSize>1024</maxHeapSize>
                             </jre>
@@ -168,7 +168,7 @@
                 <configuration>
                     <mainClass>cc.holstr.main.Runner</mainClass>
                     <iconFile>cupt.icns</iconFile>
-                    <jrePath>${jre-folder}</jrePath>
+                    <!--<jrePath>${jre-folder}</jrePath>-->
                     <generateDiskImageFile>true</generateDiskImageFile>
                 </configuration>
                 <executions>

@@ -1,7 +1,7 @@
 package cc.holstr.gui;
 
 import cc.holstr.exception.ClassCompilationException;
-import cc.holstr.gui.model.TextLineNumber;
+import cc.holstr.gui.model.LineNumberingTextArea;
 import cc.holstr.main.Runner;
 import cc.holstr.main.UILTestManager;
 import cc.holstr.main.model.UILTest;
@@ -9,14 +9,16 @@ import cc.holstr.main.model.UILTestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -38,10 +40,10 @@ public class MainWindow extends JFrame {
 	private String activeClassName;
 
 	private JSplitPane main;
+	private JSplitPane allAndInputViewPane;
+	private JSplitPane classAndOutputPane;
 	private JPanel classesListPanel;
 	private JPanel landingPanel;
-	private JPanel displayPanel;
-	private JPanel classViewPanel;
 	private JPanel buttonPanel;
 
 	private JTextArea expectedOutputViewer;
@@ -52,6 +54,7 @@ public class MainWindow extends JFrame {
 	private JLabel classViewerStatus;
 	private JTextArea classInputViewer;
 	private JLabel classInputViewerLabel;
+	private LineNumberingTextArea classViewerLNT;
 
 	private JList classesList;
 
@@ -64,6 +67,7 @@ public class MainWindow extends JFrame {
 	private Font labelFont;
 	private Font buttonFont;
 	private Font textFont;
+	private Font lineNumberFont;
 
 	private Color mainGreen;
 	private Color highlightGreen;
@@ -72,10 +76,13 @@ public class MainWindow extends JFrame {
 	private Color expectedBorder;
 	private Color actualBorder;
 	private Color buttonText;
+	private Color lineNumberBackground;
+	private Color lineNumberText;
 
 	private Action reloadAction;
 	private Action runAction;
 	private Action runAllAction;
+	private Action debugAction;
 
 	public MainWindow(UILTestManager mgr) {
 		super("UIL Program Tester");
@@ -94,10 +101,14 @@ public class MainWindow extends JFrame {
 		main = new JSplitPane();
 		main.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 		main.setDividerSize(2);
+		allAndInputViewPane = new JSplitPane();
+		allAndInputViewPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		allAndInputViewPane.setDividerSize(2);
+		classAndOutputPane = new JSplitPane();
+		classAndOutputPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		classAndOutputPane.setDividerSize(2);
 		classesListPanel = new JPanel(new BorderLayout());
-		displayPanel = new JPanel(new BorderLayout());
 		landingPanel = new JPanel();
-		classViewPanel = new JPanel(new BorderLayout());
 		classesList = new JList();
 		expectedOutputViewer = new JTextArea();
 		actualOutputViewer = new JTextArea();
@@ -107,9 +118,11 @@ public class MainWindow extends JFrame {
 		highlightGreen = new Color(106, 255, 163);
 		mainRed = new Color(255,0,0);
 		highlightRed = new Color(255, 95, 90);
-		expectedBorder = new Color(0, 180, 255);
-		actualBorder = new Color(255, 155, 0);
+		expectedBorder = new Color(200, 200, 200);
+		actualBorder = new Color(81, 81, 81);
 		buttonText = new Color(0, 0, 0);
+		lineNumberBackground = new Color(240, 240, 240);
+		lineNumberText = new Color(40, 40, 40);
 
 		//FONTS
 		titleFont = new Font("Helvetica",Font.BOLD, 26);
@@ -117,6 +130,7 @@ public class MainWindow extends JFrame {
 		labelFont = new Font("Helvetica",Font.BOLD,18);
 		buttonFont = new Font("Helvetica",Font.ITALIC,14);
 		textFont = new Font("Helvetica",Font.PLAIN,14);
+		lineNumberFont = textFont;
 
 		//CLASSESLIST
 		JScrollPane classesListScrollPane = new JScrollPane(classesList);
@@ -164,9 +178,6 @@ public class MainWindow extends JFrame {
 
 		landingPanel.add(titlesPanel);
 
-		//add for first build
-		displayPanel.add(landingPanel,BorderLayout.CENTER);
-
 		//CLASSVIEWPANEL
 		JPanel inOutViewerPanel = new JPanel(new GridLayout(1,2,20,20));
 
@@ -204,15 +215,17 @@ public class MainWindow extends JFrame {
 		inOutViewerPanel.add(expectedPanel);
 		inOutViewerPanel.add(actualPanel);
 
+		classAndOutputPane.setLeftComponent(inOutViewerPanel);
+
 		//class viewer
 		classViewer = new JTextArea();
 		JScrollPane classViewerScroll = new JScrollPane(classViewer);
-		TextLineNumber classViewerTLN = new TextLineNumber(classViewer);
+		classViewerLNT = new LineNumberingTextArea(classViewer);
+		classViewerLNT.setFont(lineNumberFont);
+		classViewerLNT.setBackground(lineNumberBackground);
+		classViewerLNT.setForeground(lineNumberText);
 		JPanel classViewerPanel = new JPanel(new BorderLayout());
-
-		classViewerTLN.setFont(textFont);
-		classViewerTLN.setUpdateFont(true);
-		classViewerScroll.setRowHeaderView(classViewerTLN);
+		classViewerScroll.setRowHeaderView(classViewerLNT);
 
 		classViewer.setEditable(false);
 		classViewer.setColumns(10);
@@ -222,7 +235,7 @@ public class MainWindow extends JFrame {
 
 		classViewerPanel.add(classViewerStatus,BorderLayout.NORTH);
 		classViewerPanel.add(classViewerScroll,BorderLayout.CENTER);
-		classViewPanel.add(classViewerPanel,BorderLayout.CENTER);
+		classAndOutputPane.setRightComponent(classViewerPanel);
 
 		//input viewer
 		JPanel classInputViewerPanel = new JPanel(new BorderLayout());
@@ -238,46 +251,23 @@ public class MainWindow extends JFrame {
 		classInputViewerPanel.add(classInputViewerLabel,BorderLayout.NORTH);
 		classInputViewerPanel.add(classInputViewerScroll,BorderLayout.CENTER);
 
-		classViewPanel.add(inOutViewerPanel,BorderLayout.NORTH);
-		classViewPanel.add(classInputViewerPanel,BorderLayout.SOUTH);
+		allAndInputViewPane.setLeftComponent(classAndOutputPane);
+		allAndInputViewPane.setRightComponent(classInputViewerPanel);
 
 		//MAIN ADDITIONS
 		main.setLeftComponent(classesListPanel);
-		main.setRightComponent(displayPanel);
+		main.setRightComponent(landingPanel);
 
 		add(main);
 
 		//JFRAME OPTIONS
-		setMinimumSize(new Dimension(614,170));
+		inOutViewerPanel.setSize(new Dimension(580,210));
+		classViewerPanel.setSize(new Dimension(580,270));
+		setMinimumSize(new Dimension(614,400));
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		setSize(800,600);
+		setSize(800,650);
 		ImageIcon imageIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("icon_512x512.png")));
 		setIconImage(imageIcon.getImage());
-
-
-
-		/*addComponentListener(new ComponentListener() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				//log.debug("dims: " + getWidth() + "," + getHeight());
-				log.debug("inputTextArea dims: " + classInputViewer.getWidth() + "," + classInputViewer.getHeight());
-			}
-
-			@Override
-			public void componentMoved(ComponentEvent e) {
-
-			}
-
-			@Override
-			public void componentShown(ComponentEvent e) {
-
-			}
-
-			@Override
-			public void componentHidden(ComponentEvent e) {
-
-			}
-		});*/
 	}
 
 	/**
@@ -372,6 +362,33 @@ public class MainWindow extends JFrame {
 				"runAll");
 		main.getActionMap().put("runAll",runAllAction);
 
+		if(Runner.DEBUG) {
+			main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_D,InputEvent.CTRL_DOWN_MASK),
+					"debug");
+			main.getActionMap().put("debug",debugAction);
+		}
+
+		//TEXTAREA LINE NUMBER DOCUMENT LISTENER
+		classViewer.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+			public void insertUpdate(DocumentEvent documentEvent)
+			{
+				classViewerLNT.updateLineNumbers();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent documentEvent)
+			{
+				classViewerLNT.updateLineNumbers();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent documentEvent)
+			{
+				classViewerLNT.updateLineNumbers();
+			}
+		});
 
 		//OLD SHORTCUT ADAPTER
 		/*shortcutKeyAdapter = new KeyAdapter() {
@@ -389,7 +406,7 @@ public class MainWindow extends JFrame {
 
 		classViewer.addKeyListener(shortcutKeyAdapter);
 		classesList.addKeyListener(shortcutKeyAdapter);
-		classViewPanel.addKeyListener(shortcutKeyAdapter);
+		allAndInputViewPane.addKeyListener(shortcutKeyAdapter);
 		classInputViewer.addKeyListener(shortcutKeyAdapter);
 		actualOutputViewer.addKeyListener(shortcutKeyAdapter);
 		expectedOutputViewer.addKeyListener(shortcutKeyAdapter);*/
@@ -430,6 +447,15 @@ public class MainWindow extends JFrame {
 				}
 			}
 		};
+
+		debugAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				log.debug("inputTextArea dims: " + classInputViewer.getWidth() + "," + classInputViewer.getHeight());
+				log.debug("classViewer dims: " + classViewer.getWidth() + "," + classViewer.getHeight());
+				log.debug("OutputViewer HEIGHT: " + expectedOutputViewer.getHeight());
+			}
+		};
 	}
 	/**
 	 * Fill lists with tests generated from manager
@@ -456,8 +482,10 @@ public class MainWindow extends JFrame {
 		activeClassName = testName;
 		classViewerStatus.setText("Loading...");
 		classViewerStatus.setForeground(Color.BLACK);
-		displayPanel.remove(landingPanel);
-		displayPanel.add(classViewPanel,BorderLayout.CENTER);
+
+		main.setRightComponent(allAndInputViewPane);
+//		displayPanel.remove(landingPanel);
+//		displayPanel.add(allAndInputViewPane,BorderLayout.CENTER);
 
 		UILTest test = mgr.getTest(testName);
 

@@ -151,6 +151,7 @@ public class UILTestManager {
 	/**
 	 * Convenience method for test(UILTest), runs all tests within tests ArrayList
 	 * @return List of UILTestResults for all tests run
+	 * @throws ClassCompilationException
 	 */
 	public List<UILTestResult> testAll() throws ClassCompilationException{
 		List<UILTestResult> results = new ArrayList<>();
@@ -164,7 +165,7 @@ public class UILTestManager {
 	 * Convenience method for test(UILTest), finds UIlTest from list by className
 	 * @param testClassName className to find UIlTest by
 	 * @return The UILTestResult with populated differences
-	 * @throws IOException
+	 * @throws ClassCompilationException
 	 */
 	public UILTestResult test(String testClassName) throws ClassCompilationException {
 		UILTest test = tests.stream().filter(t -> StringUtils.capitalize(testClassName).equals(t.getClassName())).findFirst().get();
@@ -175,7 +176,7 @@ public class UILTestManager {
 	 *
 	 * @param test The UILTest to run
 	 * @return The UILTestResult with populated differences
-	 * @throws IOException
+	 * @throws ClassCompilationException
 	 */
 	public UILTestResult test(UILTest test) throws ClassCompilationException {
 
@@ -211,7 +212,7 @@ public class UILTestManager {
 			try {
 				//get classFile, move it to the appropriate directory, create classLoader there for execution of class later
 				File classLoaderDir = Paths.get(path).toFile();
-				if(Runner.DEBUG == true) {
+				if(!System.getProperty("user.dir").equals(path)) {
 					File classFile = Arrays.stream(Paths.get(System.getProperty("user.dir")).toFile().listFiles()).filter(f -> f.getName().equals(test.getClassName() + ".class")).findFirst().get();
 					File classFileDest = Paths.get(path, test.getClassName() + ".class").toFile();
 					classFileDest.delete();
