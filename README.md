@@ -20,7 +20,7 @@ If you're experiencing issues, or have feature suggestions, please feel free to 
 ## Shortcuts
 As of now, CUPT supports 3 shortcuts. 
   - ```CTRL``` + ```R```: Recompile and run current active class 
-  - ```SHIFT``` + ```R```: Reload the registered classes (if a new class is added to the working directory and you'd like it recognise, reload.)
+  - ```SHIFT``` + ```R```: Reload the registered classes (if a new class is added to the working directory and you'd like it recognised, reload.)
   - ```CTRL``` + ```SHIFT``` + ```R```: Recompile and run all loaded classes.
 
 ## Input & Output Specification
